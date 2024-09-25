@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { samplePlaces } from "@/lib/data";  // Import your local samplePlaces data
 
-// Debounce function
+// Debounce function to delay the search
 function debounce(func: (...args: any[]) => void, delay: number) {
   let timeoutId: NodeJS.Timeout;
   return (...args: any[]) => {
@@ -27,7 +27,7 @@ export default function Home() {
   const [query, setQuery] = useState("");  // Query for the search input
   const [filteredPredictions, setFilteredPredictions] = useState(samplePlaces);  // Filtered list
 
-  // Effect to debounce the search and filter the predictions
+  // Debounced filter to show results based on input
   useEffect(() => {
     const debouncedFilter = debounce((searchQuery: string) => {
       if (searchQuery.length >= 3) {
@@ -38,17 +38,23 @@ export default function Home() {
       } else {
         setFilteredPredictions([]);
       }
-    }, 300);  
-    debouncedFilter(query);  
-  }, [query]);  
+    }, 300);  // Debounce delay of 300ms
+
+    debouncedFilter(query);  // Apply the debounced function on query change
+  }, [query]);  // Re-run the effect when query changes
+
+  // Handle click on a suggestion item
+  const handleSuggestionClick = (description: string) => {
+    setQuery(description);  // Set the clicked suggestion as the input value
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-72 font-[family-name:var(--font-geist-sans)]">
       <Command>
         <CommandInput
           placeholder="Type a command or search..."
-          value={query}  
-          onValueChange={setQuery}  
+          value={query}  // Controlled input
+          onValueChange={setQuery}  // Update query as user types
         />
         <CommandList>
           {query === "" ? (
@@ -60,7 +66,10 @@ export default function Home() {
           ) : (
             <CommandGroup heading="Suggestions">
               {filteredPredictions.map((prediction) => (
-                <CommandItem key={prediction.place_id}>
+                <CommandItem
+                  key={prediction.place_id}
+                  onSelect={() => handleSuggestionClick(prediction.description)}  // Handle click
+                >
                   {prediction.description}
                 </CommandItem>
               ))}
@@ -72,3 +81,4 @@ export default function Home() {
     </div>
   );
 }
+
